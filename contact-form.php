@@ -86,3 +86,4 @@ function process_contact()
 }
 
 add_action('wp_ajax_process_contact_form', 'process_contact');
+add_action('wp_ajax_nopriv_process_contact_form', 'process_contact');
