@@ -19,7 +19,7 @@ function add_contact_form()
             <input type="text" name="title" id="title" required> <br>
 
             <label for="content">Post Content:</label>
-            <input type="text" name="content" id="content" required> <br>
+            <input type="text" name="content" id="post_content" required> <br>
 
             <label for="name">Your Name:</label>
             <input type="text" name="name" id="name" required> <br>
@@ -31,18 +31,13 @@ function add_contact_form()
 
         </form>
 
-    
-
         <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                const submitButton = document.getElementById("submit");
-              
-
-                submitButton.addEventListener("click", function() {
-                    var title = document.getElementById("title").value;
-                    var content = document.getElementById("content").value;
-                    var name = document.getElementById("name").value;
-                    var email = document.getElementById("email").value;
+            jQuery(document).ready(function($) {
+                $("#submit").click(function() {
+                    var title = $("#title").val();
+                    var content = $("#post_content").val(); 
+                    var name = $("#name").val();
+                    var email = $("#email").val();
 
                     var formData = new FormData();
                     formData.append("action", "process_contact_form");
@@ -50,25 +45,25 @@ function add_contact_form()
                     formData.append("post_content", content);
                     formData.append("your_name", name);
                     formData.append("email", email);
-                    
-                    console.log("Form Data:");
 
+                    console.log("Form Data:");
                     for (var i of formData.entries()) {
                         console.log(i[0] + ": " + i[1]);
                     }
-
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "'.admin_url('admin-ajax.php').'");
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === XMLHttpRequest.DONE) {
-                            if (xhr.status === 200) {
-                                console.log("req is recieved");
-                            } else {
-                                console.log("there is an error");
-                            }
+                    
+                    $.ajax({
+                        type: "POST",
+                        url: ajaxurl,
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            console.log("Request is received");
+                        },
+                        error: function() {
+                            console.log("There is an error");
                         }
-                    };
-                    xhr.send(formData);
+                    });
                 });
             });
         </script>
@@ -79,11 +74,30 @@ function add_contact_form()
 
 add_shortcode('contact_form', 'add_contact_form');
 
-function process_contact()
+function process_contact_form()
 {
+    if (isset($_POST['post_title'], $_POST['post_content'], $_POST['your_name'], $_POST['email'])) {
+        $title = sanitize_text_field($_POST['post_title']);
+        $content = sanitize_textarea_field($_POST['post_content']);
+        $name = sanitize_text_field($_POST['your_name']);
+        $email = sanitize_email($_POST['email']);
 
-    wp_die(); 
+        
+        $post_data = array(
+            'post_title' => $title,
+            'post_content' => $content,
+            'post_author' => 1, 
+            'post_status' => 'publish',
+            'post_type' => 'post'
+        );
+
+        $post_id = wp_insert_post($post_data);
+
+    } else {
+        echo 'Error: Invalid data.';
+    }
+
+    wp_die();
 }
-
-add_action('wp_ajax_process_contact_form', 'process_contact');
-add_action('wp_ajax_nopriv_process_contact_form', 'process_contact');
+add_action('wp_ajax_process_contact_form', 'process_contact_form');
+add_action('wp_ajax_nopriv_process_contact_form', 'process_contact_form');
