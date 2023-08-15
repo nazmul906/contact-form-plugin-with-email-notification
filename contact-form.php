@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Contact Form
-Description: A plugin to add contact form
+Description: A plugin to add a contact form
 Author Name: Nazmul
 Version: 1.00
 */
@@ -46,14 +46,9 @@ function add_contact_form()
                     formData.append("your_name", name);
                     formData.append("email", email);
 
-                    console.log("Form Data:");
-                    for (var i of formData.entries()) {
-                        console.log(i[0] + ": " + i[1]);
-                    }
-                    
                     $.ajax({
                         type: "POST",
-                        url: ajaxurl,
+                        url: my_ajax_object.ajaxurl, // Use the localized variable
                         data: formData,
                         processData: false,
                         contentType: false,
@@ -82,7 +77,6 @@ function process_contact_form()
         $name = sanitize_text_field($_POST['your_name']);
         $email = sanitize_email($_POST['email']);
 
-        
         $post_data = array(
             'post_title' => $title,
             'post_content' => $content,
@@ -92,12 +86,20 @@ function process_contact_form()
         );
 
         $post_id = wp_insert_post($post_data);
+    
+        if ($post_id) {
+            $email_url = get_permalink($post_id);
+            $email_subject = "Greeting Note";
+            $email_message = "Thank you for the comment. View it at: $email_url";
 
+            wp_mail($email, $email_subject, $email_message);
+        }
     } else {
         echo 'Error: Invalid data.';
     }
 
     wp_die();
 }
+
 add_action('wp_ajax_process_contact_form', 'process_contact_form');
 add_action('wp_ajax_nopriv_process_contact_form', 'process_contact_form');
