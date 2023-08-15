@@ -60,7 +60,7 @@ function add_contact_form()
                     xhr.open("POST", "'.admin_url('admin-ajax.php').'", true);
                     xhr.onreadystatechange = function() {
                         if (xhr.readyState === 4 && xhr.status === 200) {
-                            console.log("Request is received and POst Published");
+                            console.log("Request is received and Post Published");
                         }
                     };
                     xhr.send(formData);
@@ -93,9 +93,9 @@ function process_contact_form()
         $post_id = wp_insert_post($post_data);
        
         if ($post_id) {
-            $email_url = get_permalink($post_id);
+            $post_url = get_permalink($post_id);
             $email_subject = "Greeting Note";
-            $email_message = "Thank you for the comment. View it at: $email_url";
+            $email_message = "Thank you for the comment. View it at: $post_url";
             $headers = array(
                 'Content-Type: text/html; charset=UTF-8',
             );
